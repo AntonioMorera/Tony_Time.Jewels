@@ -1,0 +1,49 @@
+﻿services:
+  mysql:
+    image: mysql:8.0
+    container_name: thornitime-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_DATABASE: thornitime_db
+      MYSQL_USER: thornitime_db
+      MYSQL_PASSWORD: thornitime_password
+    ports:
+      - "3308:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./mysql-init:/docker-entrypoint-initdb.d/:ro
+    restart: unless-stopped
+    command: >
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_unicode_ci
+      --default-authentication-plugin=mysql_native_password
+      --skip-host-cache
+      --skip-name-resolve
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 60s
+      retries: 10
+      start_period: 40s
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile-backend
+    container_name: thornitime-backend
+    ports:
+      - "9000:80"
+    volumes:
+      - ./src:/var/www/html
+      - ./apache-config.conf:/etc/apache2/sites-available/000-default.conf:ro
+    depends_on:
+      mysql:
+        condition: service_healthy
+    restart: unless-stopped
+    environment:
+      DB_HOST: mysql
+      DB_NAME: thornitime_db
+      DB_USER: thornitime_db
+      DB_PASS: thornitime_password
+
+volumes:
+  mysql_data: 

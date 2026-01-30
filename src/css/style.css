@@ -1,0 +1,435 @@
+/* --- Carousel Strict Implementation --- */
+.carousel {
+  max-width: 1920px;
+  aspect-ratio: 1920 / 700;
+  margin: auto;
+  overflow: hidden;
+}
+
+.carousel-track {
+  display: flex;
+  transition: transform 0.5s ease-in-out;
+}
+
+.slide {
+  min-width: 100%;
+}
+
+.slide img {
+  width: 100%;
+  display: block;
+}
+
+/* Original styles below, avoiding conflict */
+
+:root {
+    --gold: #c1c68b;
+    --gold-light: #f3e5ab;
+    --dark: #1a1a1a;
+    --black: #000;
+    --white: #fff;
+    --gray: #f4f4f4;
+    --font-heading: 'Dancing Script', cursive; 
+    --font-body: 'Lato', sans-serif;
+    --font-serif: 'Playfair Display', serif;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: var(--font-body);
+    background-color: var(--white);
+    color: var(--dark);
+    line-height: 1.6;
+}
+
+[v-cloak] { display: none; }
+
+/* --- Header & Menu --- */
+.menu-superior {
+    background-color: var(--black);
+    color: var(--gold);
+    padding: 1rem 0;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+}
+
+.contenedor-menu {
+    max-width: 1400px; /* Aumentado de 1200px a 1400px para que no esté tan pegado a los bordes en pantallas grandes */
+    margin: 0 auto;    /* Centra el bloque en pantallas grandes */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 2rem;
+    width: 100%;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem; /* Aumentado el espacio entre logo e imagen */
+    cursor: pointer;
+}
+
+.logo img {
+    height: 50px;
+    filter: brightness(0) invert(1) sepia(1) saturate(5) hue-rotate(5deg);
+}
+
+.logo .titulo {
+    font-family: var(--font-heading);
+    font-size: 2rem;
+    margin: 0;
+}
+
+nav {
+    display: flex;
+    gap: 2.5rem; /* Aumentado de 1.5rem a 2.5rem para separar las opciones del menú */
+    align-items: center;
+    /* Quitamos el margin-left: auto para que el space-between del padre haga el trabajo */
+}
+
+nav a {
+    color: var(--white);
+    text-decoration: none;
+    font-weight: 700;
+    transition: color 0.3s;
+    text-transform: uppercase;
+    font-size: 0.9rem;
+    letter-spacing: 1px;
+}
+
+nav a:hover, nav a.active {
+    color: var(--gold);
+}
+
+.badge {
+    background-color: var(--gold);
+    color: var(--black);
+    border-radius: 50%;
+    padding: 0.2rem 0.5rem;
+    font-size: 0.8rem;
+    vertical-align: top;
+}
+
+/* --- Dropdown --- */
+.dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: var(--black);
+    min-width: 160px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1;
+    top: 100%;
+}
+
+.dropdown-content a {
+    color: var(--white);
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+    text-transform: capitalize;
+}
+
+.dropdown-content a:hover {
+    background-color: #333;
+    color: var(--gold);
+}
+
+.dropdown:hover .dropdown-content {
+    display: block;
+}
+
+/* --- Main Content --- */
+.contenido-principal {
+    max-width: 1200px;
+    margin: 3rem auto;
+    padding: 0 2rem;
+    min-height: 60vh;
+}
+
+h2 {
+    font-family: var(--font-serif);
+    text-align: center;
+    font-size: 2.5rem;
+    margin-bottom: 2rem;
+    color: var(--dark);
+    position: relative;
+}
+
+h2::after {
+    content: '';
+    display: block;
+    width: 80px;
+    height: 3px;
+    background: var(--gold);
+    margin: 10px auto;
+}
+
+/* --- Grids & Cards --- */
+.productos-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 2rem;
+}
+
+.producto-card {
+    border: 1px solid #eee;
+    transition: transform 0.3s, box-shadow 0.3s;
+    background: white;
+    text-align: center;
+    padding-bottom: 1rem;
+}
+
+.producto-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+}
+
+.producto-card img {
+    width: 100%;
+    height: 250px;
+    object-fit: contain;
+    padding: 1rem;
+    background: #fdfdfd;
+    cursor: pointer;
+}
+
+.producto-card .info {
+    padding: 1rem;
+}
+
+.producto-card h3 {
+    font-size: 1.1rem;
+    margin-bottom: 0.5rem;
+    font-weight: 400;
+}
+
+.producto-card .precio {
+    font-weight: 700;
+    color: var(--gold);
+    font-size: 1.2rem;
+    margin-bottom: 1rem;
+}
+
+/* --- Buttons --- */
+.btn-primary {
+    background-color: var(--dark);
+    color: var(--white);
+    border: 1px solid var(--dark);
+    padding: 0.8rem 1.5rem;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-family: var(--font-body);
+    text-transform: uppercase;
+    font-size: 0.9rem;
+    letter-spacing: 1px;
+}
+
+.btn-primary:hover {
+    background-color: var(--gold);
+    border-color: var(--gold);
+    color: var(--black);
+}
+
+.btn-secondary {
+    background-color: transparent;
+    color: var(--dark);
+    border: 1px solid var(--dark);
+    padding: 0.8rem 1.5rem;
+    cursor: pointer;
+    text-transform: uppercase;
+}
+
+.btn-secondary:hover {
+    background-color: var(--dark);
+    color: var(--white);
+}
+
+.btn-danger {
+    background: #e74c3c;
+    color: white;
+    border: none;
+    padding: 0.5rem;
+    cursor: pointer;
+    border-radius: 4px;
+}
+
+.btn-lg {
+    font-size: 1.1rem;
+    padding: 1rem 2rem;
+}
+
+/* --- Detail View --- */
+.detalle-container {
+    display: flex;
+    gap: 3rem;
+    align-items: center;
+    margin-top: 2rem;
+}
+
+.detalle-img {
+    flex: 1;
+}
+
+.detalle-img img {
+    width: 100%;
+    max-height: 500px;
+    object-fit: contain;
+    border: 1px solid #eee;
+}
+
+.detalle-info {
+    flex: 1;
+    text-align: left;
+}
+
+.detalle-info h2 {
+    text-align: left;
+    margin-bottom: 0.5rem;
+}
+
+.detalle-info h2::after { margin: 0; }
+
+.precio-grande {
+    font-size: 2rem;
+    color: var(--gold);
+    font-weight: bold;
+    margin-bottom: 1.5rem;
+}
+
+.descripcion {
+    margin-bottom: 2rem;
+    color: #666;
+    font-size: 1.1rem;
+}
+
+.text-success { color: green; font-weight: bold; }
+.text-danger { color: red; font-weight: bold; }
+
+/* --- Cart View --- */
+.cart-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 2rem;
+}
+
+.cart-table th, .cart-table td {
+    padding: 1rem;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+}
+
+.cart-summary {
+    text-align: right;
+    background: #f9f9f9;
+    padding: 2rem;
+}
+
+.cart-summary h3 {
+    margin-bottom: 1rem;
+    font-size: 1.5rem;
+}
+
+/* --- Auth Forms --- */
+.auth-container {
+    display: flex;
+    justify-content: center;
+    padding: 2rem 0;
+}
+
+.auth-box {
+    background: white;
+    padding: 3rem;
+    box-shadow: 0 0 20px rgba(0,0,0,0.05);
+    width: 100%;
+    max-width: 500px;
+    border-top: 5px solid var(--gold);
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: bold;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 0.8rem;
+    border: 1px solid #ddd;
+    font-family: inherit;
+}
+
+.error {
+    color: red;
+    font-size: 0.8rem;
+    margin-top: 0.2rem;
+    display: block;
+}
+
+.auth-link {
+    margin-top: 1rem;
+    text-align: center;
+    font-size: 0.9rem;
+}
+
+/* --- Footer --- */
+.pie-pagina {
+    background-color: var(--black);
+    color: white;
+    text-align: center;
+    padding: 3rem 0;
+    margin-top: 4rem;
+}
+
+.contenido-pie p {
+    margin-bottom: 0.5rem;
+    opacity: 0.8;
+}
+
+.iconos-sociales {
+    margin-top: 1.5rem;
+    font-size: 1.5rem;
+}
+
+.iconos-sociales a {
+    color: var(--gold);
+    margin: 0 10px;
+    transition: transform 0.3s;
+    display: inline-block;
+}
+
+.iconos-sociales a:hover {
+    transform: scale(1.2);
+    color: white;
+}
+
+/* --- Responsive --- */
+@media (max-width: 768px) {
+    .contenedor-menu {
+        flex-direction: column;
+    }
+    nav {
+        flex-direction: column;
+        gap: 0.5rem;
+        margin-top: 1rem;
+    }
+    .detalle-container {
+        flex-direction: column;
+    }
+}

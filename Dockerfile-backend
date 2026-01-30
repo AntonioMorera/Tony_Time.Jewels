@@ -1,0 +1,35 @@
+# Dockerfile-backend
+FROM php:8.2-apache
+
+# Instalar dependencias
+RUN apt-get update && apt-get install -y \
+    libpng-dev \
+    libjpeg-dev \
+    libfreetype6-dev \
+    libzip-dev \
+    zip \
+    unzip \
+    && rm -rf /var/lib/apt/lists/*
+
+# Instalar extensiones PHP
+RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install -j$(nproc) \
+    mysqli \
+    pdo \
+    pdo_mysql \
+    gd \
+    zip
+
+# Habilitar módulos Apache necesarios
+RUN a2enmod rewrite headers
+
+# Configurar PHP
+RUN echo "error_reporting = E_ALL" > /usr/local/etc/php/conf.d/errors.ini && \
+    echo "display_errors = On" >> /usr/local/etc/php/conf.d/errors.ini
+
+RUN echo "ServerName localhost" >> /etc/apache2/apache2.conf
+
+WORKDIR /var/www/html
+EXPOSE 80
+
+CMD ["apache2-foreground"]

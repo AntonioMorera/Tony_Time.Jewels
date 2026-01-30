@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tony Time & Jewels</title>
+  <link rel="icon" href="img\logo.png" type="image/png">
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="css/style.css">
+  
+  <!-- Iconos y Fuentes -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400..700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <!-- Aquí empieza la aplicación Vue -->
+  <div id="app" v-cloak>
+
+    <!-- MENU SUPERIOR -->
+    <header class="menu-superior">
+      <div class="contenedor-menu">
+        <h1 class="logo" @click="irA('inicio')">
+          <img src="img/logo.png" alt="Logo">
+          <p class="titulo">Tony Time & Jewels</p>
+        </h1>
+
+        <nav>
+          <a href="#" @click.prevent="irA('inicio')">{{ t.menu_inicio }}</a>
+          
+          <!-- Componente desplegable -->
+          <mi-dropdown :textos="textos_web" :idioma="idioma_actual"></mi-dropdown>
+          
+          <a href="#" @click.prevent="irA('acerca')">{{ t.menu_acerca }}</a>
+          
+          <!-- Si no hay usuario, muestro Login -->
+          <template v-if="!usuario_conectado">
+            <a href="#" @click.prevent="irA('login')">{{ t.menu_login }}</a>
+          </template>
+          
+          <!-- Si hay usuario, muestro Salir -->
+          <template v-else>
+            <a href="#" @click.prevent="cerrarSesion">{{ t.menu_logout }} ({{ usuario_conectado.nombre }})</a>
+          </template>
+
+          <a href="#" @click.prevent="irA('carrito')">
+            <i class="fas fa-shopping-cart"></i> {{ t.menu_carrito }} 
+            <span class="badge" v-if="numeroArticulos > 0">{{ numeroArticulos }}</span>
+          </a>
+          
+          <!-- Selector de idioma -->
+          <div class="dropdown">
+            <a href="#">Idioma</a>
+            <div class="dropdown-content">
+              <a href="#" @click.prevent="ponerIdioma('es')">Español</a>
+              <a href="#" @click.prevent="ponerIdioma('en')">English</a>
+            </div>
+          </div>
+        </nav>
+      </div>
+    </header>
+
+    <!-- CARRUSEL (Solo se ve en inicio) -->
+    <section v-if="pantalla === 'inicio'" class="carousel-section">
+      <mi-carrusel></mi-carrusel>
+    </section>
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <main class="contenido-principal">
+
+      <!-- PANTALLA DE INICIO -->
+      <section v-if="pantalla === 'inicio'">
+        <h2>{{ t.titulo_coleccion }}</h2>
+        <div class="productos-grid">
+            <!-- Recorro la lista de productos con v-for -->
+            <div class="producto-card" v-for="prod in lista_productos" :key="prod.id">
+                <img :src="prod.imagen" :alt="prod.nombre" @click="verDetalle(prod)">
+                <div class="info">
+                    <h3>{{ prod.nombre }}</h3>
+                    <p class="precio">{{ precioBonito(prod.precio) }}</p>
+                    <p style="font-size:0.8rem; color:#666;">Stock: {{ prod.stock }}</p>
+                    
+                    <!-- Boton que cambia si no hay stock -->
+                    <button 
+                        v-if="prod.stock > 0" 
+                        class="btn-primary" 
+                        @click="meterEnCarrito(prod)">
+                        {{ t.boton_anadir }}
+                    </button>
+                    <button 
+                        v-else 
+                        class="btn-danger" 
+                        disabled 
+                        style="opacity: 0.6; cursor: not-allowed;">
+                        {{ t.boton_agotado }}
+                    </button>
+
+                </div>
+            </div>
+        </div>
+      </section>
+
+      <!-- PANTALLA DE PRODUCTOS (Filtrados) -->
+      <section v-if="pantalla === 'productos'">
+        <h2>{{ t.menu_productos }}</h2>
+        <div class="productos-grid">
+            <div class="producto-card" v-for="prod in lista_productos" :key="prod.id">
+                <img :src="prod.imagen" :alt="prod.nombre" @click="verDetalle(prod)">
+                <div class="info">
+                    <h3>{{ prod.nombre }}</h3>
+                    <p class="precio">{{ precioBonito(prod.precio) }}</p>
+                    <p style="font-size:0.8rem; color:#666;">Stock: {{ prod.stock }}</p>
+
+                    <!-- Boton que cambia si no hay stock -->
+                    <button 
+                        v-if="prod.stock > 0" 
+                        class="btn-primary" 
+                        @click="meterEnCarrito(prod)">
+                        {{ t.boton_anadir }}
+                    </button>
+                    <button 
+                        v-else 
+                        class="btn-danger" 
+                        disabled 
+                        style="opacity: 0.6; cursor: not-allowed;">
+                        {{ t.boton_agotado }}
+                    </button>
+                </div>
+            </div>
+        </div>
+      </section>
+
+      <!-- PANTALLA DETALLE PRODUCTO -->
+      <section v-if="pantalla === 'detalle' && producto_para_ver" class="detalle-producto">
+        <button class="btn-back" @click="irA('inicio')">← Volver</button>
+        <div class="detalle-container">
+            <div class="detalle-img">
+                <img :src="producto_para_ver.imagen" :alt="producto_para_ver.nombre">
+            </div>
+            <div class="detalle-info">
+                <h2>{{ producto_para_ver.nombre }}</h2>
+                <p class="precio-grande">{{ precioBonito(producto_para_ver.precio) }}</p>
+                <p class="descripcion">{{ producto_para_ver.descripcion }}</p>
+                
+                <p class="disponibilidad">
+                    <strong>Stock: {{ producto_para_ver.stock }} unidades</strong>
+                </p>
+
+                <!-- Boton detalle -->
+                <button 
+                    v-if="producto_para_ver.stock > 0" 
+                    class="btn-primary btn-lg" 
+                    @click="meterEnCarrito(producto_para_ver)">
+                    {{ t.boton_anadir }}
+                </button>
+                <button 
+                    v-else 
+                    class="btn-danger btn-lg" 
+                    disabled 
+                    style="opacity: 0.6; cursor: not-allowed;">
+                    {{ t.boton_agotado }}
+                </button>
+
+            </div>
+        </div>
+      </section>
+
+      <!-- PANTALLA CARRITO -->
+      <section v-if="pantalla === 'carrito'" class="carrito-vista">
+        <h2>{{ t.menu_carrito }}</h2>
+        
+        <!-- Si está vacío -->
+        <div v-if="carrito_compras.length === 0" class="empty-cart">
+            <i class="fas fa-shopping-basket"></i>
+            <p>{{ t.carrito_vacio }}</p>
+            <button class="btn-primary" @click="irA('inicio')">{{ t.menu_inicio }}</button>
+        </div>
+        
+        <!-- Tabla de productos -->
+        <div v-else class="cart-table-container">
+            <table class="cart-table">
+                <thead>
+                    <tr>
+                        <th>Producto</th>
+                        <th>Precio</th>
+                        <th>Cant.</th>
+                        <th>Subtotal</th>
+                        <th>Acción</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="(item, index) in carrito_compras" :key="index">
+                        <td>{{ item.nombre }}</td>
+                        <td>{{ precioBonito(item.precio) }}</td>
+                        <td>{{ item.cantidad }}</td>
+                        <td>{{ precioBonito(item.precio * item.cantidad) }}</td>
+                        <td><button class="btn-danger" @click="sacarDelCarrito(index)"><i class="fas fa-trash"></i></button></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="cart-summary">
+                <h3>{{ t.texto_total }}: {{ precioBonito(precioTotal) }}</h3>
+                <button class="btn-secondary" @click="borrarCarrito">{{ t.boton_vaciar }}</button>
+                <button class="btn-primary" @click="pagar">{{ t.boton_comprar }}</button>
+            </div>
+        </div>
+      </section>
+
+      <!-- PANTALLA LOGIN -->
+      <section v-if="pantalla === 'login'" class="auth-container">
+        <div class="auth-box">
+            <h2>{{ t.titulo_login }}</h2>
+            <form @submit.prevent="hacerLogin">
+                <div class="form-group">
+                    <label>{{ t.campo_email }}</label>
+                    <input type="email" v-model="form_login.email" required>
+                </div>
+                <div class="form-group">
+                    <label>{{ t.campo_pass }}</label>
+                    <input type="password" v-model="form_login.password" required>
+                </div>
+                <button type="submit" class="btn-primary">{{ t.btn_enviar }}</button>
+            </form>
+            <p class="auth-link">¿No tienes cuenta? <a href="#" @click.prevent="irA('registro')">{{ t.titulo_registro }}</a></p>
+        </div>
+      </section>
+
+      <!-- PANTALLA REGISTRO -->
+      <section v-if="pantalla === 'registro'" class="auth-container">
+        <div class="auth-box">
+            <h2>{{ t.titulo_registro }}</h2>
+            <form @submit.prevent="registrarse">
+                <div class="form-group">
+                    <label>{{ t.campo_nombre }}</label>
+                    <input type="text" v-model="form_registro.nombre" required>
+                    <span class="error" v-if="errores_registro.nombre">{{ errores_registro.nombre }}</span>
+                </div>
+                
+                <!-- AQUI CAMBIADO A SOLO DNI -->
+                <div class="form-group">
+                    <label>DNI</label>
+                    <input type="text" v-model="form_registro.id" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>{{ t.campo_email }}</label>
+                    <input type="email" v-model="form_registro.email" required>
+                    <span class="error" v-if="errores_registro.email">{{ errores_registro.email }}</span>
+                </div>
+                <div class="form-group">
+                    <label>{{ t.campo_pass }}</label>
+                    <input type="password" v-model="form_registro.password" required>
+                    <span class="error" v-if="errores_registro.password">{{ errores_registro.password }}</span>
+                </div>
+                <div class="form-group">
+                    <label>{{ t.campo_cuenta }}</label>
+                    <input type="text" v-model="form_registro.cuenta" placeholder="ES..." required>
+                    <span class="error" v-if="errores_registro.cuenta">{{ errores_registro.cuenta }}</span>
+                </div>
+                <div class="form-group">
+                    <label>{{ t.campo_telf }}</label>
+                    <input type="tel" v-model="form_registro.telefono" required>
+                    <span class="error" v-if="errores_registro.telefono">{{ errores_registro.telefono }}</span>
+                </div>
+                <button type="submit" class="btn-primary">{{ t.btn_enviar }}</button>
+            </form>
+            <p class="auth-link">¿Ya tienes cuenta? <a href="#" @click.prevent="irA('login')">{{ t.titulo_login }}</a></p>
+        </div>
+      </section>
+
+      <!-- PANTALLA ACERCA DE -->
+      <section v-if="pantalla === 'acerca'" class="about-section">
+          <h2>{{ t.menu_acerca }}</h2>
+          <div class="about-content">
+              <p>Hola, somos Tony Time & Jewels. Vendemos relojes y joyas muy bonitas.</p>
+              <p>Esperamos que te gusten nuestros productos.</p>
+          </div>
+      </section>
+
+    </main>
+
+    <!-- PIE DE PAGINA -->
+    <footer class="pie-pagina">
+      <div class="contenido-pie">
+        <p>© 2026 Tony Time & Jewels</p>
+        <p>contacto@tonytimejeweles.com · 999 999 999</p>
+        <div class="iconos-sociales">
+          <a href="#"><i class="fab fa-facebook"></i></a>
+          <a href="#"><i class="fab fa-instagram"></i></a>
+          <a href="#"><i class="fab fa-twitter"></i></a>
+        </div>
+      </div>
+    </footer>
+
+  </div>
+
+  <!-- Cargar Vue y mi script -->
+  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

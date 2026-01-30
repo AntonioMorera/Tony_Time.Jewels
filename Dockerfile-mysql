@@ -1,0 +1,15 @@
+# Dockerfile-mysql
+FROM mysql:8.0
+
+# Copiar el archivo de inicialización SQL
+COPY mysql-init/init.sql /docker-entrypoint-initdb.d/
+
+# Cambiar permisos para que MySQL pueda leerlo
+RUN chmod 644 /docker-entrypoint-initdb.d/init.sql
+
+# Configuración por defecto de MySQL (se puede sobrescribir en docker-compose)
+CMD ["mysqld", \
+    "--character-set-server=utf8mb4", \
+    "--collation-server=utf8mb4_unicode_ci", \
+    "--default-authentication-plugin=mysql_native_password", \
+    "--skip-log-bin"]  # Desactivar binary logs para desarrollo
