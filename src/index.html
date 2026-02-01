@@ -65,7 +65,7 @@
     </header>
 
     <!-- CARRUSEL (Solo se ve en inicio) -->
-    <section v-if="pantalla === 'inicio'" class="carousel-section">
+    <section v-if="pantalla === 'inicio' || pantalla === 'productos'" class="carousel-section">
       <mi-carrusel></mi-carrusel>
     </section>
 
@@ -241,7 +241,7 @@
                     <span class="error" v-if="errores_registro.nombre">{{ errores_registro.nombre }}</span>
                 </div>
                 
-                <!-- AQUI CAMBIADO A SOLO DNI -->
+
                 <div class="form-group">
                     <label>DNI</label>
                     <input type="text" v-model="form_registro.id" required>

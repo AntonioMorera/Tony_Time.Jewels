@@ -152,7 +152,10 @@ const app = Vue.createApp({
         // Función para cambiar de pantalla
         irA(nombrePantalla) {
             this.pantalla = nombrePantalla;
-            // Subir arriba del todo
+            if (this.pantalla === 'inicio') {
+                this.cargarProductos();
+            }
+
             window.scrollTo(0, 0);
         },
         
