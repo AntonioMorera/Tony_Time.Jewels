@@ -19,7 +19,7 @@ const app = Vue.createApp({
             },
             form_registro: {
                 nombre: '',
-                id: '', // AHORA ES DNI
+                dni: '', 
                 email: '',
                 password: '',
                 cuenta: '',
@@ -345,6 +345,7 @@ const app = Vue.createApp({
             let reglaEmail = /\S+@\S+\.\S+/;
             // Regex solo numeros para telefono
             let reglaTelf = /^[0-9]+$/;
+            let reglaDNI = /^[0-9]{8}[A-Z]$/;
             
             if (this.form_registro.nombre == '') {
                 this.errores_registro.nombre = 'Pon tu nombre';
@@ -361,7 +362,10 @@ const app = Vue.createApp({
             if (this.form_registro.cuenta == '') {
                 this.errores_registro.cuenta = 'Falta la cuenta bancaria';
             }
-            
+            if (!reglaDNI.test(this.form_registro.dni)) {
+                this.errores_registro.dni = 'El DNI debe tener 8 números y una letra (ej: 12345678A)';
+            }
+
             if (!reglaTelf.test(this.form_registro.telefono)) {
                 this.errores_registro.telefono = 'El teléfono solo puede tener números';
             }
@@ -383,7 +387,7 @@ const app = Vue.createApp({
                     alert('¡Te has registrado! Ahora entra con tu cuenta.');
                     this.irA('login');
                     // Limpio formulario
-                    this.form_registro = { nombre: '', id: '', email: '', password: '', cuenta: '', telefono: '' };
+                    this.form_registro = { nombre: '', dni: '', email: '', password: '', cuenta: '', telefono: '' };
                 } else {
                     alert('Error: ' + dato.message);
                 }
